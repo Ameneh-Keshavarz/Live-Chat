@@ -1,8 +1,20 @@
 <!DOCTYPE html>
-<html>
-  <body>
-    <h1>Message:</h1>
-    <p id="output"></p>
-    <script src="script.js"></script>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Simple Chat</h2>
+  <div id="messages"></div>
+
+  <form id="chat-form">
+    <input type="text" id="username" placeholder="Your name" required />
+    <input type="text" id="message" placeholder="Your message" required />
+    <button type="submit">Send</button>
+  </form>
+
+  <script src="script.js"></script>
+</body>
 </html>
