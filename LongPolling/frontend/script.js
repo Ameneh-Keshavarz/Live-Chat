@@ -2,7 +2,7 @@ const messagesDiv = document.getElementById("messages");
 const form = document.getElementById("chat-form");
 const usernameInput = document.getElementById("username");
 const messageInput = document.getElementById("message");
-const server = "http://localhost:3000/api";
+const server = "https://ameneh-livechat-longpolling.hosting.codeyourfuture.io/api";
 
 
 const state = { messages: [] };
