@@ -15,6 +15,15 @@ app.use(express.json());
 
 let messages = [];
 
+function broadcast(obj) {
+  const data = JSON.stringify(obj);
+  wss.clients.forEach(client => {
+    if (client.readyState === client.OPEN) {
+      client.send(data);
+    }
+  });
+}
+
 app.get("/", (req, res) => {
   res.json({ result: "WebSocket server is running" });
 });
@@ -38,12 +47,7 @@ app.post("/api/messages", (req, res) => {
   messages.push(newMessage);
   res.status(201).json(newMessage);
 
-  const message = {
-    type: "new-message",
-    data: newMessage,
-  };
-
-  broadcast(message);
+  broadcast({ type: "new-message", data: newMessage });
 });
 
 app.post("/api/messages/:id/react", (req, res) => {
@@ -51,41 +55,37 @@ app.post("/api/messages/:id/react", (req, res) => {
   const { action } = req.body;
 
   const message = messages.find(msg => msg.id === id);
-  if (!message) return res.status(404).json({ error: "Message not found" });
+  if (!message) {
+    return res.status(404).json({ error: "Message not found" });
+  }
 
-  if (action === "like") message.likes++;
-  else if (action === "dislike") message.dislikes++;
-  else return res.status(400).json({ error: "Invalid action" });
+  if (action === "like") {
+    message.likes++;
+  } else if (action === "dislike") {
+    message.dislikes++;
+  } else {
+    return res.status(400).json({ error: "Invalid action" });
+  }
 
-  const update = {
+  broadcast({
     type: "reaction-update",
     data: {
       id: message.id,
       likes: message.likes,
       dislikes: message.dislikes,
     },
-  };
+  });
 
-  broadcast(update);
   res.json({ success: true });
 });
 
 wss.on("connection", (ws) => {
-  messages.forEach(message => {
+  for (const message of messages) {
     ws.send(JSON.stringify({ type: "new-message", data: message }));
-  });
+  }
 });
-
-function broadcast(obj) {
-  const data = JSON.stringify(obj);
-  wss.clients.forEach(client => {
-    if (client.readyState === 1) {
-      client.send(data);
-    }
-  });
-}
 
 server.listen(PORT, () => {
   const host = process.env.HOST || "localhost";
-  console.log(`Server is running at http://${host}:${PORT}`);
+  console.log(`Server running at http://${host}:${PORT}`);
 });
