@@ -7,7 +7,8 @@ const state = { messages: [] };
 
 const render = () => {
   messagesDiv.innerHTML = '';
-  state.messages.forEach(msg => {
+
+  for (const msg of state.messages) {
     const msgElem = document.createElement("div");
     msgElem.className = "message";
 
@@ -18,7 +19,7 @@ const render = () => {
     `;
 
     messagesDiv.appendChild(msgElem);
-  });
+  }
 
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 };
@@ -40,8 +41,8 @@ socket.addEventListener("message", (event) => {
     }
 
     render();
-  } catch (err) {
-    console.error("Failed to parse WebSocket message:", err);
+  } catch (error) {
+    console.error("Failed to parse WebSocket message:", error);
   }
 });
 
