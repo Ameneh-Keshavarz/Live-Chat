@@ -10,18 +10,33 @@ const render = () => {
   state.messages.forEach(msg => {
     const msgElem = document.createElement("div");
     msgElem.className = "message";
-    msgElem.textContent = `${msg.username}: ${msg.text}`;
+
+    msgElem.innerHTML = `
+      <strong>${msg.username}</strong>: ${msg.text}<br />
+      <button data-id="${msg.id}" data-action="like">👍 ${msg.likes || 0}</button>
+      <button data-id="${msg.id}" data-action="dislike">👎 ${msg.dislikes || 0}</button>
+    `;
+
     messagesDiv.appendChild(msgElem);
   });
+
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 };
 
 const socket = new WebSocket("ws://localhost:3000");
 
 socket.addEventListener("message", (event) => {
-  const newMessages = JSON.parse(event.data);
+  const message = JSON.parse(event.data);
 
-  state.messages.push(...newMessages);
+  if (message.type === "new-message") {
+    state.messages.push(message.data);
+  } else if (message.type === "reaction-update") {
+    const index = state.messages.findIndex(msg => msg.id === message.data.id);
+    if (index !== -1) {
+      state.messages[index].likes = message.data.likes;
+      state.messages[index].dislikes = message.data.dislikes;
+    }
+  }
   render();
 });
 
@@ -39,4 +54,18 @@ form.addEventListener("submit", async (e) => {
   });
 
   messageInput.value = "";
+});
+
+messagesDiv.addEventListener("click", async (e) => {
+  const btn = e.target;
+  if (btn.tagName !== "BUTTON") return;
+
+  const messageId = btn.getAttribute("data-id");
+  const action = btn.getAttribute("data-action");
+
+  await fetch(`http://localhost:3000/api/messages/${messageId}/react`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action }),
+  });
 });
