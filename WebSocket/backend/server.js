@@ -31,22 +31,59 @@ app.post("/api/messages", (req, res) => {
     username,
     text,
     timestamp: new Date().toISOString(),
+    likes: 0,
+    dislikes: 0,
   };
 
   messages.push(newMessage);
   res.status(201).json(newMessage);
 
-  const data = JSON.stringify([newMessage]);
+  const message = {
+    type: "new-message",
+    data: newMessage,
+  };
+
+  broadcast(message);
+});
+
+app.post("/api/messages/:id/react", (req, res) => {
+  const { id } = req.params;
+  const { action } = req.body;
+
+  const message = messages.find(msg => msg.id === id);
+  if (!message) return res.status(404).json({ error: "Message not found" });
+
+  if (action === "like") message.likes++;
+  else if (action === "dislike") message.dislikes++;
+  else return res.status(400).json({ error: "Invalid action" });
+
+  const update = {
+    type: "reaction-update",
+    data: {
+      id: message.id,
+      likes: message.likes,
+      dislikes: message.dislikes,
+    },
+  };
+
+  broadcast(update);
+  res.json({ success: true });
+});
+
+wss.on("connection", (ws) => {
+  messages.forEach(message => {
+    ws.send(JSON.stringify({ type: "new-message", data: message }));
+  });
+});
+
+function broadcast(obj) {
+  const data = JSON.stringify(obj);
   wss.clients.forEach(client => {
     if (client.readyState === 1) {
       client.send(data);
     }
   });
-});
-
-wss.on("connection", (ws) => {
-  ws.send(JSON.stringify(messages));
-});
+}
 
 server.listen(PORT, () => {
   const host = process.env.HOST || "localhost";
