@@ -4,6 +4,10 @@ import crypto from "crypto";
 import { createServer } from "http";
 import { WebSocketServer } from "ws";
 
+import { asyncWrapper } from "./middlewares/asyncWrapper.js";
+import { notFound } from "./middlewares/notFound.js";
+import { errorHandlerMiddleware } from "./middlewares/errorHandlerMiddleware.js";
+
 const app = express();
 const server = createServer(app);
 const wss = new WebSocketServer({ server });
@@ -28,7 +32,7 @@ app.get("/", (req, res) => {
   res.json({ result: "WebSocket server is running" });
 });
 
-app.post("/api/messages", (req, res) => {
+app.post("/api/messages", asyncWrapper(async (req, res) => {
   const { username, text } = req.body;
 
   if (!username || !text) {
@@ -48,9 +52,9 @@ app.post("/api/messages", (req, res) => {
   res.status(201).json(newMessage);
 
   broadcast({ type: "new-message", data: newMessage });
-});
+}));
 
-app.post("/api/messages/:id/react", (req, res) => {
+app.post("/api/messages/:id/react", asyncWrapper(async (req, res) => {
   const { id } = req.params;
   const { action } = req.body;
 
@@ -77,13 +81,16 @@ app.post("/api/messages/:id/react", (req, res) => {
   });
 
   res.json({ success: true });
-});
+}));
 
 wss.on("connection", (ws) => {
   for (const message of messages) {
     ws.send(JSON.stringify({ type: "new-message", data: message }));
   }
 });
+
+app.use(notFound);
+app.use(errorHandlerMiddleware);
 
 server.listen(PORT, () => {
   const host = process.env.HOST || "localhost";
