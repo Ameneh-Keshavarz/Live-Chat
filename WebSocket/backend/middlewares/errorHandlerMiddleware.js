@@ -1,11 +1,11 @@
 import { StatusCodes } from "http-status-codes";
-import { CustomAPIError } from "../errors/custom-error.js";
+import { ApiError } from "../errors/ApiError.js";
 
 export const errorHandlerMiddleware = (err, req, res, next) => {
   let statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
   let message = "Something went wrong. Please try again later.";
 
-  if (err instanceof CustomAPIError) {
+  if (err instanceof ApiError) {
     statusCode = err.statusCode;
     message = err.message;
   }
