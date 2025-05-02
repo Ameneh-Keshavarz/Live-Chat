@@ -7,17 +7,21 @@ import { WebSocketServer } from "ws";
 import { asyncWrapper } from "./middlewares/asyncWrapper.js";
 import { notFound } from "./middlewares/notFound.js";
 import { errorHandlerMiddleware } from "./middlewares/errorHandlerMiddleware.js";
+import { authenticate } from "./middlewares/authMiddleware.js";
+import { db } from "./db/db.js";
+import { register, login } from "./controllers/authController.js";
 
 const app = express();
 const server = createServer(app);
 const wss = new WebSocketServer({ server });
-
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-
-let messages = [];
+app.use((req, res, next) => {
+  console.log(`Incoming ${req.method} request to ${req.url}`);
+  next();
+});
 
 function broadcast(obj) {
   const data = JSON.stringify(obj);
@@ -32,11 +36,15 @@ app.get("/", (req, res) => {
   res.json({ result: "WebSocket server is running" });
 });
 
-app.post("/api/messages", asyncWrapper(async (req, res) => {
-  const { username, text } = req.body;
+app.post("/api/auth/register", register);
+app.post("/api/auth/login", login);
 
-  if (!username || !text) {
-    return res.status(400).json({ error: "Username and message text are required." });
+app.post("/api/messages", authenticate, asyncWrapper(async (req, res) => {
+  const { text } = req.body;
+  const username = req.user.username;
+
+  if (!text) {
+    return res.status(400).json({ error: "Message text is required." });
   }
 
   const newMessage = {
@@ -48,42 +56,42 @@ app.post("/api/messages", asyncWrapper(async (req, res) => {
     dislikes: 0,
   };
 
-  messages.push(newMessage);
+  await db("messages").insert(newMessage);
   res.status(201).json(newMessage);
-
   broadcast({ type: "new-message", data: newMessage });
 }));
 
-app.post("/api/messages/:id/react", asyncWrapper(async (req, res) => {
+app.post("/api/messages/:id/react", authenticate, asyncWrapper(async (req, res) => {
   const { id } = req.params;
   const { action } = req.body;
 
-  const message = messages.find(msg => msg.id === id);
+  const message = await db("messages").where({ id }).first();
   if (!message) {
     return res.status(404).json({ error: "Message not found" });
   }
 
-  if (action === "like") {
-    message.likes++;
-  } else if (action === "dislike") {
-    message.dislikes++;
-  } else {
+  const updateField = action === "like" ? "likes" : action === "dislike" ? "dislikes" : null;
+  if (!updateField) {
     return res.status(400).json({ error: "Invalid action" });
   }
+
+  await db("messages").where({ id }).increment(updateField, 1);
+  const updated = await db("messages").where({ id }).first();
 
   broadcast({
     type: "reaction-update",
     data: {
-      id: message.id,
-      likes: message.likes,
-      dislikes: message.dislikes,
+      id,
+      likes: updated.likes,
+      dislikes: updated.dislikes,
     },
   });
 
   res.json({ success: true });
 }));
 
-wss.on("connection", (ws) => {
+wss.on("connection", async (ws) => {
+  const messages = await db("messages").orderBy("timestamp", "asc");
   for (const message of messages) {
     ws.send(JSON.stringify({ type: "new-message", data: message }));
   }
