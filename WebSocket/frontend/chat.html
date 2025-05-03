@@ -3,16 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <title>Chat</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <h2>Welcome to the Chat</h2>
-  <p id="user-label"></p>
-  <form id="chat-form">
-    <input type="text" id="message" placeholder="Type your message..." required />
-    <button type="submit">Send</button>
-  </form>
-  <div id="messages"></div>
-  <button id="logout-btn">Logout</button>
+<body class="centered-page">
+  <div class="container">
+    <h2>Welcome to the Chat</h2>
+    <p id="user-label"></p>
+    <form id="chat-form">
+      <input type="text" id="message" placeholder="Type your message..." required />
+      <button type="submit">Send</button>
+    </form>
+    <div id="messages"></div>
+    <button id="logout-btn">Logout</button>
+  </div>
   <script src="client.js" type="module"></script>
 </body>
 </html>
