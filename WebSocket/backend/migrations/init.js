@@ -5,6 +5,7 @@ const createTables = async () => {
   if (!hasUsers) {
     await db.schema.createTable("users", (table) => {
       table.increments("id").primary();
+      table.string("full_name").notNullable();
       table.string("username").unique().notNullable();
       table.string("password").notNullable();
     });
@@ -14,7 +15,13 @@ const createTables = async () => {
   if (!hasMessages) {
     await db.schema.createTable("messages", (table) => {
       table.uuid("id").primary();
-      table.string("username").notNullable();
+      table
+        .integer("user_id")
+        .unsigned()
+        .notNullable()
+        .references("id")
+        .inTable("users")
+        .onDelete("CASCADE");
       table.text("text").notNullable();
       table.timestamp("timestamp").defaultTo(db.fn.now());
       table.integer("likes").defaultTo(0);
@@ -22,7 +29,7 @@ const createTables = async () => {
     });
   }
 
-  console.log("Tables created");
+  console.log("Tables created or verified successfully");
   process.exit();
 };
 
