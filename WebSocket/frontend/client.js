@@ -1,27 +1,77 @@
 const API_URL = "http://localhost:3000";
 
+// DOM Elements
 const messagesDiv = document.getElementById("messages");
 const chatForm = document.getElementById("chat-form");
 const messageInput = document.getElementById("message");
 const logoutBtn = document.getElementById("logout-btn");
 const userLabel = document.getElementById("user-label");
 
+// State/Token
 const username = localStorage.getItem("username");
+const fullName = localStorage.getItem("full_name");
 const token = localStorage.getItem("token");
 
 if (!token || !username) {
   window.location.href = "login.html";
 }
 
-userLabel.textContent = `Logged in as: ${username}`;
+userLabel.textContent = `Logged in as: ${fullName || username}`;
 
 const state = {
   messages: [],
   token,
   username,
+  fullName,
 };
 
-const socket = new WebSocket("ws://localhost:3000");
+// Logout
+function handleUnauthorized(res) {
+  if (res.status === 401) {
+    alert("Session expired. Please log in again.");
+    localStorage.clear();
+    window.location.href = "login.html";
+    return true;
+  }
+  return false;
+}
+
+// Render Messages
+const render = () => {
+  messagesDiv.innerHTML = "";
+  for (const msg of state.messages) {
+    const msgElem = document.createElement("div");
+    msgElem.className = "message";
+
+    const nameElem = document.createElement("strong");
+    nameElem.textContent = msg.full_name || msg.username;
+
+    const textNode = document.createTextNode(`: ${msg.text}`);
+    const br = document.createElement("br");
+
+    const likeBtn = document.createElement("button");
+    likeBtn.textContent = `👍 ${msg.likes || 0}`;
+    likeBtn.dataset.id = msg.id;
+    likeBtn.dataset.action = "like";
+
+    const dislikeBtn = document.createElement("button");
+    dislikeBtn.textContent = `👎 ${msg.dislikes || 0}`;
+    dislikeBtn.dataset.id = msg.id;
+    dislikeBtn.dataset.action = "dislike";
+
+    msgElem.appendChild(nameElem);
+    msgElem.appendChild(textNode);
+    msgElem.appendChild(br);
+    msgElem.appendChild(likeBtn);
+    msgElem.appendChild(dislikeBtn);
+
+    messagesDiv.appendChild(msgElem);
+  }
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+};
+
+// WebSocket Setup 
+const socket = new WebSocket(`ws://localhost:3000?token=${encodeURIComponent(state.token)}`);
 
 socket.addEventListener("message", (event) => {
   try {
@@ -43,21 +93,11 @@ socket.addEventListener("message", (event) => {
   }
 });
 
-const render = () => {
-  messagesDiv.innerHTML = "";
-  for (const msg of state.messages) {
-    const msgElem = document.createElement("div");
-    msgElem.className = "message";
-    msgElem.innerHTML = `
-      <strong>${msg.username}</strong>: ${msg.text} <br />
-      <button data-id="${msg.id}" data-action="like">👍 ${msg.likes || 0}</button>
-      <button data-id="${msg.id}" data-action="dislike">👎 ${msg.dislikes || 0}</button>
-    `;
-    messagesDiv.appendChild(msgElem);
-  }
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-};
+socket.addEventListener("close", () => {
+  console.warn("WebSocket disconnected.");
+});
 
+// Send Message
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = messageInput.value.trim();
@@ -73,6 +113,8 @@ chatForm.addEventListener("submit", async (e) => {
       body: JSON.stringify({ text }),
     });
 
+    if (handleUnauthorized(response)) return;
+
     const result = await response.json();
     if (!response.ok) {
       alert(result.error || "Failed to send message.");
@@ -85,6 +127,7 @@ chatForm.addEventListener("submit", async (e) => {
   }
 });
 
+// React to Message
 messagesDiv.addEventListener("click", async (e) => {
   const btn = e.target;
   if (btn.tagName !== "BUTTON") return;
@@ -102,6 +145,8 @@ messagesDiv.addEventListener("click", async (e) => {
       body: JSON.stringify({ action }),
     });
 
+    if (handleUnauthorized(response)) return;
+
     const result = await response.json();
     if (!result.success) {
       alert(result.error || "Failed to react.");
@@ -112,7 +157,9 @@ messagesDiv.addEventListener("click", async (e) => {
   }
 });
 
+// Logout
 logoutBtn.addEventListener("click", () => {
   localStorage.clear();
+  socket.close();
   window.location.href = "login.html";
 });
