@@ -10,17 +10,15 @@ const userLabel = document.getElementById("user-label");
 // State/Token
 const username = localStorage.getItem("username");
 const fullName = localStorage.getItem("full_name");
-const token = localStorage.getItem("token");
 
-if (!token || !username) {
-  window.location.href = "login.html";
+if (!username) {
+  window.location.href = "index.html";
 }
 
 userLabel.textContent = `Logged in as: ${fullName || username}`;
 
 const state = {
   messages: [],
-  token,
   username,
   fullName,
 };
@@ -30,7 +28,7 @@ function handleUnauthorized(res) {
   if (res.status === 401) {
     alert("Session expired. Please log in again.");
     localStorage.clear();
-    window.location.href = "login.html";
+    window.location.href = "index.html";
     return true;
   }
   return false;
@@ -71,7 +69,7 @@ const render = () => {
 };
 
 // WebSocket Setup 
-const socket = new WebSocket(`ws://localhost:3000?token=${encodeURIComponent(state.token)}`);
+const socket = new WebSocket("ws://localhost:3000");
 
 socket.addEventListener("message", (event) => {
   try {
@@ -101,15 +99,15 @@ socket.addEventListener("close", () => {
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = messageInput.value.trim();
-  if (!text || !state.token) return;
+  if (!text) return;
 
   try {
     const response = await fetch(`${API_URL}/api/messages`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${state.token}`,
+        "Content-Type": "application/json"
       },
+      credentials: "include",
       body: JSON.stringify({ text }),
     });
 
@@ -140,8 +138,8 @@ messagesDiv.addEventListener("click", async (e) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${state.token}`,
       },
+      credentials: "include",
       body: JSON.stringify({ action }),
     });
 
@@ -161,5 +159,5 @@ messagesDiv.addEventListener("click", async (e) => {
 logoutBtn.addEventListener("click", () => {
   localStorage.clear();
   socket.close();
-  window.location.href = "login.html";
+  window.location.href = "index.html";
 });

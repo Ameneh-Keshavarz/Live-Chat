@@ -1,0 +1,17 @@
+# Node modules
+**/node_modules/
+
+# Environment variables
+**/.env
+
+# Logs
+**/*.log
+
+# Vite build output
+frontend/dist/
+
+# macOS system files
+.DS_Store
+
+# VS Code settings (optional)
+.vscode/
