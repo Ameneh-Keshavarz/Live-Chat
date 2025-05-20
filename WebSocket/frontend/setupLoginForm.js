@@ -1,32 +1,41 @@
-const API_URL = "http://localhost:3000/api/auth";
+import {showMessage} from './utils.js';
 
-const loginForm = document.getElementById("login-form");
+const form = document.getElementById("login-form");
+const statusMessage = document.getElementById("status-message");
 
-loginForm.addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const username = document.getElementById("login-username").value.trim();
   const password = document.getElementById("login-password").value;
 
-  if (!username || !password) {
-    alert("Username and password are required.");
-    return;
+  try {
+    const res = await fetch("http://localhost:3000/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+      credentials: "include",
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.log("Login failed", res.status, data);
+      showMessage(statusMessage,"Login failed",true);
+      return;
+    }
+
+    console.log("Login successful", data);
+
+    localStorage.setItem("username", data.username);
+    localStorage.setItem("full_name", data.full_name);
+
+    showMessage(statusMessage,"Login successful!", false);
+
+    setTimeout(() => {
+      window.location.href = "chat.html";
+    }, 1000);
+  } catch (err) {
+    console.error(err);
+    showMessage(statusMessage,"An error occurred during login",true);
   }
-
-  const res = await fetch(`${API_URL}/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
-  });
-
-  if (!res.ok) {
-    alert("Login failed.");
-    return;
-  }
-
-  const data = await res.json();
-  localStorage.setItem("token", data.token);
-  localStorage.setItem("username", username);
-  localStorage.setItem("full_name", data.full_name); 
-
-  window.location.href = "chat.html";
 });
