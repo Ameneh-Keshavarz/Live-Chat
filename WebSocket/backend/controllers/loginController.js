@@ -6,9 +6,6 @@ import { ApiError } from "../errors/ApiError.js";
 import { StatusCodes } from "http-status-codes";
 import { JWT_SECRET } from "../config.js";
 
-
-//const JWT_SECRET = process.env.JWT_SECRET;
-
 export const login = asyncWrapper(async (req, res) => {
   const { username, password } = req.body;
   console.log("Login attempt:", username);
@@ -32,16 +29,22 @@ export const login = asyncWrapper(async (req, res) => {
     throw new Error("Missing JWT_SECRET");
   }
   
-
   const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, {
     expiresIn: "1h",
   });
 
-  res.json({
-    token,
+  res
+  .cookie("token", token, {
+    httpOnly: true,
+    sameSite: "Strict",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 1000,
+  })
+  .json({
     userId: user.id,
     username: user.username,
     full_name: user.full_name,
   });
+
 });
 
