@@ -1,4 +1,4 @@
-import {showMessage} from './utils.js';
+import {showMessage} from '../utils.js';
 
 const form = document.getElementById("login-form");
 const statusMessage = document.getElementById("status-message");

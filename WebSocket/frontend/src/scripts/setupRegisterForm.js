@@ -1,4 +1,4 @@
-import { showMessage } from "./utils.js";
+import { showMessage } from "../utils.js";
 
 const API_URL = "http://localhost:3000/api/auth";
 
