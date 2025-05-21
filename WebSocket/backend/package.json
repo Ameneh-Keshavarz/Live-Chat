@@ -12,5 +12,11 @@
     "sqlite3": "^5.1.7",
     "websocket": "^1.0.35",
     "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "scripts": {
+    "test": "jest"
   }
 }
