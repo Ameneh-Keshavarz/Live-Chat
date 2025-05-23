@@ -161,3 +161,12 @@ logoutBtn.addEventListener("click", () => {
   socket.close();
   window.location.href = "index.html";
 });
+
+socket.addEventListener("close", () => {
+  console.warn("WebSocket disconnected.");
+
+  alert("Server connection lost. Logging out.");
+  localStorage.clear();
+  window.location.href = "index.html";
+});
+
