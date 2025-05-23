@@ -1,5 +1,5 @@
 import { WebSocketServer, WebSocket } from "ws";
-import { initWSS, broadcast } from "../websocket/broadcast.js";
+import { initWSS, broadcast } from "../../websocket/broadcast.js";
 
 describe("WebSocket broadcast", () => {
   let wss;
