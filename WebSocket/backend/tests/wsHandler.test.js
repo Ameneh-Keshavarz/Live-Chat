@@ -1,5 +1,5 @@
-const { WebSocketServer } = require("ws");
-const WebSocket = require("ws");
+import { WebSocketServer } from "ws";
+import {WebSocket} from "ws";
 
 test("WebSocket connection and message event works", (done) => {
   const port = 8083;
@@ -21,6 +21,9 @@ test("WebSocket connection and message event works", (done) => {
   });
 
   wsClient.on("error", (err) => {
+    wsClient.close();
+    wss.close();
     done(err);
   });
+  
 });
