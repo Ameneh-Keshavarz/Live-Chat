@@ -4,7 +4,7 @@ import { broadcast } from "../websocket/broadcast.js";
 import { ApiError } from "../errors/ApiError.js";
 import { StatusCodes } from "http-status-codes";
 
-export const postMessage = asyncWrapper(async (req, res) => {
+export const postMessage = async (req, res) => {
   const { text } = req.body;
   const user_id = req.user.userId;
 
@@ -15,9 +15,9 @@ export const postMessage = asyncWrapper(async (req, res) => {
   const message = await createMessage({ user_id, text });
   res.status(201).json(message);
   broadcast({ type: "new-message", data: message });
-});
+};
 
-export const reactToMessage = asyncWrapper(async (req, res) => {
+export const reactToMessage = async (req, res) => {
   const { id } = req.params;
   const { action } = req.body;
 
@@ -25,4 +25,4 @@ export const reactToMessage = asyncWrapper(async (req, res) => {
 
   broadcast({ type: "reaction-update", data: result });
   res.json({ success: true });
-});
+};
