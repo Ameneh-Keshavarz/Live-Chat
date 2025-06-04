@@ -23,6 +23,7 @@ app.use(cors({
   origin: CLIENT_ORIGIN, 
   credentials: true,
 }));
+console.log("Allowing CORS origin:", CLIENT_ORIGIN);
 
 app.use(cookieParser());
 app.use(express.json());
