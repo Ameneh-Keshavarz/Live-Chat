@@ -1,6 +1,6 @@
 import { showMessage } from "../utils.js";
 
-const API_URL = "http://localhost:3000/api/auth";
+const API_URL = 'https://ameneh-websocket-backend.hosting.codeyourfuture.io/api/auth';
 
 const registerForm = document.getElementById("register-form");
 const statusMessage = document.getElementById("status-message");
@@ -34,6 +34,6 @@ registerForm.addEventListener("submit", async (e) => {
     }, 1000);
   } catch (err) {
     console.error(err);
-    showMessage(statusMessage,"An error occurred during registration",ture);
+    showMessage(statusMessage,"An error occurred during registration",true);
   }
 });

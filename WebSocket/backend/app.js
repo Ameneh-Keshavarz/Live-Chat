@@ -20,17 +20,12 @@ initWSS(wss);
 setupWebSocketHandlers(wss);
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: process.env.CLIENT_ORIGIN, 
   credentials: true,
 }));
 
 app.use(cookieParser());
 app.use(express.json());
-
-app.use((req, res, next) => {
-  console.log(`Incoming ${req.method} request to ${req.url}`);
-  next();
-});
 
 app.get("/", (req, res) => res.json({ result: "WebSocket server is running" }));
 
@@ -40,6 +35,6 @@ app.use("/api/messages", messageRoutes);
 app.use(notFound);
 app.use(errorHandlerMiddleware);
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   console.log(`Server running at http://${HOST}:${PORT}`);
 });

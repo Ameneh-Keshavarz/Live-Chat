@@ -1,5 +1,3 @@
-const API_URL = "http://localhost:3000";
-
 // DOM Elements
 const messagesDiv = document.getElementById("messages");
 const chatForm = document.getElementById("chat-form");
@@ -69,7 +67,10 @@ const render = () => {
 };
 
 // WebSocket Setup 
-const socket = new WebSocket("ws://localhost:3000");
+const API_URL = "https://ameneh-websocket-backend.hosting.codeyourfuture.io";
+const WS_URL = API_URL.replace(/^https/, 'wss'); 
+
+const socket = new WebSocket(`${WS_URL}`);
 
 socket.addEventListener("message", (event) => {
   try {
