@@ -1,6 +1,6 @@
 import { showMessage } from "../utils.js";
 
-const API_URL = 'https://ameneh-websocket-backend.hosting.codeyourfuture.io/api/auth/register';
+const API_URL = 'https://ameneh-websocket-backend.hosting.codeyourfuture.io/api/auth';
 
 const registerForm = document.getElementById("register-form");
 const statusMessage = document.getElementById("status-message");
