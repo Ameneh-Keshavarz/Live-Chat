@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { WebSocketServer } from "ws";
 
-import { PORT, HOST } from "./config.js";
+import { PORT, HOST,CLIENT_ORIGIN } from "./config.js";
 import authRoutes from "./routes/authRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import { notFound } from "./middlewares/notFound.js";
@@ -20,7 +20,7 @@ initWSS(wss);
 setupWebSocketHandlers(wss);
 
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN, 
+  origin: CLIENT_ORIGIN, 
   credentials: true,
 }));
 
