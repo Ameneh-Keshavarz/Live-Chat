@@ -34,6 +34,6 @@ registerForm.addEventListener("submit", async (e) => {
     }, 1000);
   } catch (err) {
     console.error(err);
-    showMessage(statusMessage,"An error occurred during registration",ture);
+    showMessage(statusMessage,"An error occurred during registration",true);
   }
 });
