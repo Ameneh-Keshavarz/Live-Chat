@@ -91,10 +91,6 @@ socket.addEventListener("message", (event) => {
   }
 });
 
-socket.addEventListener("close", () => {
-  console.warn("WebSocket disconnected.");
-});
-
 // Send Message
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
