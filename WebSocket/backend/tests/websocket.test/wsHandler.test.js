@@ -1,5 +1,5 @@
 import { WebSocketServer } from "ws";
-import {WebSocket} from "ws";
+import { WebSocket } from "ws";
 
 test("WebSocket connection and message event works", (done) => {
   const port = 8083;
@@ -11,13 +11,20 @@ test("WebSocket connection and message event works", (done) => {
 
   const wsClient = new WebSocket(`ws://localhost:${port}`);
 
-  wsClient.on("message", (data) => {
-    const message = JSON.parse(data);
-    expect(message.type).toBe("test");
-    expect(message.data).toBe("hello world");
-    wsClient.close();
-    wss.close();
-    done();
+  wsClient.on("open", () => {
+    wsClient.on("message", (data) => {
+      try {
+        const message = JSON.parse(data);
+        expect(message.type).toBe("test");
+        expect(message.data).toBe("hello world");
+        done();
+      } catch (error) {
+        done(error);
+      } finally {
+        wsClient.close();
+        wss.close();
+      }
+    });
   });
 
   wsClient.on("error", (err) => {
@@ -25,5 +32,4 @@ test("WebSocket connection and message event works", (done) => {
     wss.close();
     done(err);
   });
-  
 });
