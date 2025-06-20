@@ -11,7 +11,9 @@ describe("WebSocket broadcast", () => {
   });
 
   test("sends message to open clients", (done) => {
-    wss = new WebSocketServer({ port }, () => {
+    wss = new WebSocketServer({ port });
+
+    wss.on("listening", () => {
       initWSS(wss);
 
       const client = new WebSocket(`ws://localhost:${port}`);
@@ -31,7 +33,9 @@ describe("WebSocket broadcast", () => {
   });
 
   test("does not send to closed clients", (done) => {
-    wss = new WebSocketServer({ port }, () => {
+    wss = new WebSocketServer({ port });
+
+    wss.on("listening", () => {
       initWSS(wss);
 
       const client = new WebSocket(`ws://localhost:${port}`);
