@@ -13,7 +13,7 @@ export const postMessage = async (req, res) => {
   }
 
   const message = await createMessage({ user_id, text });
-  res.status(201).json(message);
+  res.status(StatusCodes.CREATED).json(message);
   broadcast({ type: "new-message", data: message });
 };
 
@@ -24,5 +24,5 @@ export const reactToMessage = async (req, res) => {
   const result = await updateReaction({ id, action });
 
   broadcast({ type: "reaction-update", data: result });
-  res.json({ success: true });
+  res.status(StatusCodes.OK).json({ success: true }); 
 };
