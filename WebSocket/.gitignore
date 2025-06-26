@@ -13,5 +13,11 @@ frontend/dist/
 # macOS system files
 .DS_Store
 
-# VS Code settings (optional)
+# VS Code settings 
 .vscode/
+
+# Ignore SQLite database files
+**/chat.db
+**/*.sqlite
+**/*.db
+**/*.sqlite3
